@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeClash</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@6.1.2/bundles/stomp.umd.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            width: 700px;
+            text-align: center;
+        }
+
+        .card {
+            margin-top: 20px;
+            padding: 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        input {
+            padding: 10px;
+            width: 200px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            background-color: #667eea;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>🔥 CodeClash</h1>
+
+    <div>
+        <input type="text" id="username" placeholder="Enter your username">
+        <button id="startButton">Start</button>
+    </div>
+
+    <div class="card" id="findMatch" style="display: none;">
+        <h2>Find Match</h2>
+        <p>Click to start matchmaking</p>
+    </div>
+</div>
+
+<script>
+    const client = new StompJs.Client({
+        webSocketFactory: () => new SockJS('/connect'),
+        debug: function (str) {
+            console.log('STOMP: ' + str);
+        },
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+    });
+
+    client.onConnect = function (frame) {
+        console.log("Connected to WebSocket: " + frame);
+
+        document.getElementById("startButton").onclick = function () {
+            const username = document.getElementById("username").value;
+            if (!username) {
+                alert("Please enter a username.");
+                return;
+            }
+
+            // Subscribe to the user-specific queue for match results
+            client.subscribe("/user/" + username + "/queue/pair", function (msg) {
+                alert("Match Found: " + msg.body);
+            });
+
+            // Send the pair request
+            client.publish({
+                destination: "/app/pair",
+                body: JSON.stringify({ username: username })
+            });
+
+            console.log("Pair request sent for user: " + username);
+        };
+    };
+
+    client.onStompError = function (frame) {
+        console.error('Broker reported error: ' + frame.headers['message']);
+        console.error('Additional details: ' + frame.body);
+    };
+
+    client.activate();
+</script>
+
+</body>
+</html>
