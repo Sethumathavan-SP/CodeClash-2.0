@@ -1,0 +1,28 @@
+# Ignore IntelliJ project files
+/.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Maven/Java build outputs and artifacts
+/CodeClash/target/
+/CodeClash/*.jar
+*.class
+
+# Node modules and build outputs for frontend
+/code-clash-frontend/node_modules/
+/code-clash-frontend/dist/
+node_modules/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Others
+*.zip
+*.tar.gz
+
